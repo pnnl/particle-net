@@ -25,7 +25,7 @@ class ConvNet(object):
             else:
                 h = Conv2D(f, (k, k), strides=s, activation='relu', padding='same', data_format='channels_last')(h)
 
-            h = MaxPooling2D(pool_size=(m, m), strides=s, data_format='channels_last')(h)
+            h = MaxPooling2D(pool_size=(m, m), strides=s, padding='same', data_format='channels_last')(h)
 
         # flatten
         h = Flatten()(h)
