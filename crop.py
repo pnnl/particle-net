@@ -6,14 +6,14 @@ import numpy as np
 
 if __name__ == '__main__':
     # path to data
-    path = '26B_EDX_Stg4_SEM'
+    path = 'data/26B_EDX_Stg4_SEM'
 
     # directory to save particles
     if not exists(join(path, 'particles')):
         os.makedirs(join(path, 'particles'))
 
     # read in csv
-    df = pd.read_csv('26b_edx_stg4_main.csv')
+    df = pd.read_csv('data/26b_edx_stg4_main.csv')
 
     # maximum particle dimensions
     maxdim = int(max(df['X_width'].max(), df['Y_height'].max()))
@@ -93,5 +93,5 @@ if __name__ == '__main__':
     labels = labels[idx]
 
     # save
-    np.save('particles.npy', output)
-    np.save('labels.npy', labels)
+    np.save('data/particles.npy', output)
+    np.save('data/labels.npy', labels)
