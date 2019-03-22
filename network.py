@@ -1,6 +1,7 @@
 from keras.layers import Input, Conv2D, Flatten, Dense, MaxPooling2D, Dropout
 from keras.models import Model
 from keras.optimizers import Adam
+import keras.backend as K
 
 
 class ConvNet(object):
@@ -37,7 +38,7 @@ class ConvNet(object):
         h = Dense(self.nlabels, activation='relu')(h)
 
         # output
-        output = Dense(self.nlabels, activation='linear')(h)
+        output = Dense(self.nlabels, activation='relu')(h)
 
         # define model
         self.network = Model(inputs=x,
@@ -47,7 +48,8 @@ class ConvNet(object):
         # optimizer
         opt = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=1E-8, amsgrad=True)
 
+        K.set_epsilon(1)
+
         # compile autoencoder
         self.network.compile(optimizer=opt,
-                             loss='mae',
-                             metrics=['accuracy'])
+                             loss='mape')
