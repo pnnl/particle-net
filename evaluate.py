@@ -52,4 +52,4 @@ def evaluate(network, data, labels, test_size=0.33):
 
 if __name__ == '__main__':
     np.random.seed(777)
-    evaluate('result/convnet.h5', 'data/particles.npy', 'data/labels.npy')
+    evaluate('result/convnet.h5', 'data/particles_train.npy', 'data/labels_lognorm_train.npy')
