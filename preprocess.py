@@ -3,95 +3,122 @@ from os.path import *
 import os
 import cv2
 import numpy as np
+import glob
+
+
+def combine():
+    for subset in ['train', 'test']:
+        print(subset)
+        particles = glob.glob('data/%s/*_particles.npy' % subset)
+        labels = glob.glob('data/%s/*_labels.npy' % subset)
+
+        particles = [np.load(x) for x in particles]
+        labels = [np.load(x) for x in labels]
+
+        particles = np.concatenate(particles, axis=0)
+        labels = np.concatenate(labels, axis=0)
+
+        print('\tparticles:', particles.shape)
+        print('\tlabels:', labels.shape)
+
+        np.save('data/particles_%s.npy' % subset, particles)
+        np.save('data/labels_%s.npy' % subset, labels)
+
 
 if __name__ == '__main__':
-    # path to data
-    path = 'data/26B_EDX_Stg4_SEM'
+    paths = glob.glob('data/train/*')
 
-    # directory to save particles
-    if not exists(join(path, 'particles')):
-        os.makedirs(join(path, 'particles'))
+    for path in paths:
+        print(basename(path))
 
-    # read in csv
-    df = pd.read_csv('data/26b_edx_stg4_main.csv')
+        # directory to save particles
+        if not exists(join(path, 'particles')):
+            os.makedirs(join(path, 'particles'))
 
-    # maximum particle dimensions
-    maxdim = int(max(df['X_width'].max(), df['Y_height'].max()))
+        # read in csv
+        df = pd.read_csv(join(path, basename(path) + '.csv'))
 
-    # desired labels
-    columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K', 'Area', 'Shape']
+        # maximum particle dimensions
+        # maxdim = int(max(df['X_width'].max(), df['Y_height'].max()))
+        maxdim = 256
 
-    # output containers
-    output = []
-    labels = []
+        # desired labels
+        columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K', 'Area', 'Shape']
 
-    # iterate dataframe
-    for i, row in df.iterrows():
-        # field identifier
-        fld = float(str(row['Field#'])[1:])
+        # out containers
+        out = []
+        labels = []
 
-        # image path
-        f = join(path, 'fld%04d' % fld, 'search.tif')
+        # iterate dataframe
+        for i, row in df.iterrows():
+            # field identifier
+            fld = float(str(row['Field#'])[1:])
 
-        if exists(f):
-            # read image
-            im = cv2.imread(f, 0)
+            # image path
+            f = join(path, 'fld%04d' % fld, 'search.tif')
 
-            # particle location
-            x0 = int(row['X_left'])
-            w = int(row['X_width'])
-            y0 = int(row['Y_low'])
-            h = int(row['Y_height'])
+            if exists(f):
+                # read image
+                im = cv2.imread(f, 0)
 
-            # invert y coordinate for opencv
-            y0 = im.shape[0] - y0
+                # particle location
+                x0 = int(row['X_left'])
+                w = int(row['X_width'])
+                y0 = int(row['Y_low'])
+                h = int(row['Y_height'])
 
-            # make sure dims are even
-            if h % 2 > 0:
-                h += 1
-                y0 = min(y0 + 1, im.shape[0])
-            if w % 2 > 0:
-                w += 1
+                # invert y coordinate for opencv
+                y0 = im.shape[0] - y0
 
-            # crop
-            cropped = im[y0 - h:y0, x0:x0 + w]
+                # make sure dims are even
+                if h % 2 > 0:
+                    h += 1
+                    y0 = min(y0 + 1, im.shape[0])
+                if w % 2 > 0:
+                    w += 1
 
-            # pad to maxdim
-            padded = np.zeros((maxdim, maxdim))
-            c = maxdim // 2
+                if h > maxdim or w > maxdim:
+                    pass
+                else:
+                    # crop
+                    cropped = im[y0 - h:y0, x0:x0 + w]
 
-            padded[c - (h // 2): c + (h // 2), c - (w // 2):c + (w // 2)] = cropped
+                    # pad to maxdim
+                    padded = np.zeros((maxdim, maxdim))
+                    c = maxdim // 2
 
-            # write image
-            cv2.imwrite(join(path, 'particles', 'particle_fld%04d_%03d.png' % (fld, i)), padded)
+                    padded[c - (h // 2): c + (h // 2), c - (w // 2):c + (w // 2)] = cropped
 
-            # append to array
-            output.append(padded)
-            labels.append(row[columns].values)
+                    # write image
+                    cv2.imwrite(join(path, 'particles', 'particle_fld%04d_%03d.png' % (fld, i)), padded)
 
-    # stack along first dim
-    output = np.stack(output, axis=0)
+                    # append to array
+                    out.append(padded)
+                    labels.append(row[columns].values)
 
-    # normalize
-    output = (output - output.mean()) / output.std()
+        # stack along first dim
+        out = np.stack(out, axis=0)
 
-    # organanize labels
-    labels = np.array(labels)
+        # normalize
+        out = (out - out.mean()) / out.std()
 
-    # add blanks
-    blanks = np.random.normal(output.mean(), output.std(), size=output.shape)
-    blank_labels = np.zeros_like(labels)
+        # organanize labels
+        labels = np.array(labels)
 
-    # concat
-    output = np.concatenate((output, blanks), axis=0)
-    labels = np.concatenate((labels, blank_labels), axis=0)
+        # # add blanks
+        # blanks = np.random.normal(out.mean(), out.std(), size=out.shape)
+        # blank_labels = np.zeros_like(labels)
 
-    # shuffle
-    idx = np.arange(output.shape[0])
-    np.random.shuffle(idx)
-    output = output[idx]
-    labels = labels[idx]
+        # # concat
+        # out = np.concatenate((out, blanks), axis=0)
+        # labels = np.concatenate((labels, blank_labels), axis=0)
 
-    # save
-    np.save('data/particles.npy', output)
-    np.save('data/labels.npy', labels)
+        # shuffle
+        idx = np.arange(out.shape[0])
+        np.random.shuffle(idx)
+        out = out[idx]
+        labels = labels[idx]
+
+        # save
+        np.save('data/%s_particles.npy' % basename(path), out)
+        np.save('data/%s_labels.npy' % basename(path), labels)
