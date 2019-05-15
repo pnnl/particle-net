@@ -48,8 +48,8 @@ class ConvNet(object):
         # optimizer
         opt = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=1E-8, amsgrad=True)
 
-        K.set_epsilon(1)
+        # K.set_epsilon(1)
 
         # compile autoencoder
         self.network.compile(optimizer=opt,
-                             loss='mape')
+                             loss='mse')

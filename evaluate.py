@@ -41,8 +41,8 @@ def evaluate(network, data, labels, test_size=0.33):
     pred_train.to_csv('result/predicted_train.tsv', sep='\t', index=False)
     pred_val.to_csv('result/predicted_test.tsv', sep='\t', index=False)
 
-    train_error = 100 * np.mean(np.abs(y_train - z_train) / np.ma.masked_where(y_train == 0, y_train), axis=0)
-    val_error = 100 * np.mean(np.abs(y_val - z_val) / np.ma.masked_where(y_val == 0, y_val), axis=0)
+    train_error = 100 * np.mean(np.abs(y_train - z_train) / np.ma.masked_where(y_train == 0, np.abs(y_train)), axis=0)
+    val_error = 100 * np.mean(np.abs(y_val - z_val) / np.ma.masked_where(y_val == 0, np.abs(y_val)), axis=0)
 
     print('\ntrain error:')
     print('\n'.join('{}: {:.1f}%'.format(*k) for k in zip(columns, train_error)))
