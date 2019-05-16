@@ -11,17 +11,22 @@ import glob
 def combine():
     # for subset in ['train', 'test']:
     # print(subset)
-    particles = glob.glob('data/*_particles.npy')
-    labels = glob.glob('data/*_labels.npy')
+    particles = glob.glob('data/parts/*_particles.npy')
+    labels = glob.glob('data/parts/*_labels.npy')
 
     data = [np.load(x) for x in labels]
     data = np.concatenate(data, axis=0)
+
+    idx = np.arange(data.shape[0])
+    np.random.shuffle(idx)
+    data = data[idx]
 
     print('\tlabels:', data.shape)
     np.save('data/labels.npy', data)
 
     data = [np.load(x) for x in particles]
     data = np.concatenate(data, axis=0)
+    data = data[idx]
 
     print('\tparticles:', data.shape)
     np.save('data/particles.npy', data)
