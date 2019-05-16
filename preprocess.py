@@ -4,30 +4,34 @@ import os
 import cv2
 import numpy as np
 import glob
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
 
 def combine():
-    for subset in ['train', 'test']:
-        print(subset)
-        particles = glob.glob('data/%s/*_particles.npy' % subset)
-        labels = glob.glob('data/%s/*_labels.npy' % subset)
+    # for subset in ['train', 'test']:
+    # print(subset)
+    particles = glob.glob('data/*_particles.npy')
+    labels = glob.glob('data/*_labels.npy')
 
-        particles = [np.load(x) for x in particles]
-        labels = [np.load(x) for x in labels]
+    data = [np.load(x) for x in labels]
+    data = np.concatenate(data, axis=0)
 
-        particles = np.concatenate(particles, axis=0)
-        labels = np.concatenate(labels, axis=0)
+    print('\tlabels:', data.shape)
+    np.save('data/labels.npy', data)
 
-        print('\tparticles:', particles.shape)
-        print('\tlabels:', labels.shape)
+    data = [np.load(x) for x in particles]
+    data = np.concatenate(data, axis=0)
 
-        np.save('data/particles_%s.npy' % subset, particles)
-        np.save('data/labels_%s.npy' % subset, labels)
+    print('\tparticles:', data.shape)
+    np.save('data/particles.npy', data)
 
 
-if __name__ == '__main__':
-    paths = glob.glob('data/train/*')
+def process():
+    paths = glob.glob('data/test/*/')
+    paths = [dirname(x) for x in paths]
 
+    # dims = []
     for path in paths:
         print(basename(path))
 
@@ -39,8 +43,9 @@ if __name__ == '__main__':
         df = pd.read_csv(join(path, basename(path) + '.csv'))
 
         # maximum particle dimensions
-        # maxdim = int(max(df['X_width'].max(), df['Y_height'].max()))
-        maxdim = 256
+        # maxdim = np.max(np.column_stack([df['X_width'].values, df['Y_height'].values]), axis=-1)
+        # dims.append(maxdim)
+        maxdim = 96
 
         # desired labels
         columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K', 'Area', 'Shape']
@@ -100,14 +105,14 @@ if __name__ == '__main__':
         out = np.stack(out, axis=0)
 
         # normalize
-        out = (out - out.mean()) / out.std()
+        # out = (out - out.mean()) / out.std()
 
         # organanize labels
         labels = np.array(labels)
 
-        # # add blanks
-        # blanks = np.random.normal(out.mean(), out.std(), size=out.shape)
-        # blank_labels = np.zeros_like(labels)
+        # # add 10% blanks
+        # blanks = np.random.normal(out.mean(), out.std(), size=(int(0.1 * out.shape[0]), maxdim, maxdim))
+        # blank_labels = np.zeros((int(0.1 * out.shape[0]), maxdim, maxdim))
 
         # # concat
         # out = np.concatenate((out, blanks), axis=0)
@@ -122,3 +127,23 @@ if __name__ == '__main__':
         # save
         np.save('data/%s_particles.npy' % basename(path), out)
         np.save('data/%s_labels.npy' % basename(path), labels)
+
+    # dims = np.concatenate(dims, axis=0)
+    # q = [50, 60, 70, 80, 90, 95, 98, 99, 99.5, 99.9]
+    # p = np.percentile(dims, q)
+
+    # for i, j in zip(q, p):
+    #     print('%.1f%%: %s' % (i, j))
+
+    # sns.distplot(dims, norm_hist=True, kde=False)
+    # plt.axvline(x=p[-4], label='98th percentile', linestyle='--', c='k', linewidth=2)
+
+    # plt.ylabel('density', fontweight='bold')
+    # plt.xlabel('max dimension (pixels)', fontweight='bold')
+
+    # plt.legend()
+    # plt.show()
+
+
+if __name__ == '__main__':
+    combine()
