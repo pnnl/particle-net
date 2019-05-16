@@ -35,10 +35,11 @@ class ConvNet(object):
         h = Dropout(self.dropout)(h)
 
         # dense
+        h = Dense(1000, activation='relu')(h)
         h = Dense(self.nlabels, activation='relu')(h)
 
         # output
-        output = Dense(self.nlabels, activation='relu')(h)
+        output = Dense(self.nlabels, activation='linear')(h)
 
         # define model
         self.network = Model(inputs=x,

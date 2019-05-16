@@ -56,4 +56,4 @@ def train(data, labels, output, test_size=0.33,
 
 if __name__ == '__main__':
     np.random.seed(777)
-    train('data/particles_train.npy', 'data/labels_lognorm_train.npy', 'result', epochs=1000, batch_size=128)
+    train('data/particles_norm.npy', 'data/labels_lognorm.npy', 'result', epochs=1000, batch_size=128)
