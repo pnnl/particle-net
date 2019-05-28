@@ -49,13 +49,15 @@ def labels():
     np.save('data/labels_normlog.npy', normlog['data'])
     np.save('data/labels_lognorm.npy', lognorm['data'])
 
+    print(lognorm['data'].shape)
+
     fig, ax = plt.subplots(nrows=1, ncols=5, figsize=(9, 2), dpi=150)
-    labels = ['original', 'normalized', 'logged', 'norm+log', 'log+norm']
+    labels = ['original', 'normalize', 'log', 'norm+log', 'log+norm']
     for i, subset in enumerate([data, normed, logged, normlog, lognorm]):
         ax[i].set_title(labels[i])
         for j in range(subset['data'].shape[1]):
-            sns.kdeplot(subset['data'][:, j], ax=ax[i])
-
+            sns.distplot(subset['data'][:, j], hist=False, norm_hist=True, ax=ax[i])
+    plt.tight_layout()
     plt.show()
 
 
@@ -75,4 +77,4 @@ def images():
 
 if __name__ == '__main__':
     labels()
-    images()
+    # images()

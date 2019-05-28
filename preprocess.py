@@ -13,23 +13,26 @@ def combine():
     # print(subset)
     particles = glob.glob('data/parts/*_particles.npy')
     labels = glob.glob('data/parts/*_labels.npy')
+    geom = glob.glob('data/parts/*_geom.npy')
+    comp = glob.glob('data/parts/*_comp.npy')
 
-    data = [np.load(x) for x in labels]
+    data = [np.load(x) for x in particles]
     data = np.concatenate(data, axis=0)
 
     idx = np.arange(data.shape[0])
     np.random.shuffle(idx)
     data = data[idx]
 
-    print('\tlabels:', data.shape)
-    np.save('data/labels.npy', data)
-
-    data = [np.load(x) for x in particles]
-    data = np.concatenate(data, axis=0)
-    data = data[idx]
-
     print('\tparticles:', data.shape)
     np.save('data/particles.npy', data)
+
+    for z, name in zip([labels, geom, comp], ['labels', 'geom', 'comp']):
+        data = [np.load(x) for x in z]
+        data = np.concatenate(data, axis=0)
+        data = data[idx]
+
+        print('\t%s:' % name, data.shape)
+        np.save('data/%s.npy' % name, data)
 
 
 def process():
@@ -53,7 +56,8 @@ def process():
         maxdim = 96
 
         # desired labels
-        columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K', 'Area', 'Shape']
+        columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K']
+        # columns = ['Area', 'Shape']
 
         # out containers
         out = []
@@ -131,7 +135,7 @@ def process():
 
         # save
         np.save('data/%s_particles.npy' % basename(path), out)
-        np.save('data/%s_labels.npy' % basename(path), labels)
+        np.save('data/%s_comp.npy' % basename(path), labels)
 
     # dims = np.concatenate(dims, axis=0)
     # q = [50, 60, 70, 80, 90, 95, 98, 99, 99.5, 99.9]
