@@ -2,6 +2,7 @@ import keras
 import numpy as np
 from os.path import *
 from network import ConvNet
+import sys
 
 
 def test_train_split(x, test_size=0.1):
@@ -56,4 +57,4 @@ def train(data, labels, output, test_size=0.33,
 
 if __name__ == '__main__':
     np.random.seed(777)
-    train('data/particles_norm.npy', 'data/labels_lognorm.npy', 'result', epochs=1000, batch_size=128)
+    train(sys.argv[1], sys.argv[2], sys.argv[3], epochs=10000, batch_size=128, patience=1000)
