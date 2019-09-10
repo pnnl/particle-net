@@ -2,9 +2,11 @@ import keras
 import numpy as np
 from train import test_train_split
 import pandas as pd
+import sys
+from os.path import *
 
 
-columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K', 'Area', 'Shape']
+columns = ['C K', 'N K', 'O K', 'AlK', 'SiK', 'FeK', 'P K', 'K K']
 
 
 def evaluate(network, data, labels, test_size=0.33):
@@ -36,10 +38,10 @@ def evaluate(network, data, labels, test_size=0.33):
     pred_train = pd.DataFrame(data=z_train, columns=columns)
     pred_val = pd.DataFrame(data=z_val, columns=columns)
 
-    true_train.to_csv('result/true_train.tsv', sep='\t', index=False)
-    true_val.to_csv('result/true_test.tsv', sep='\t', index=False)
-    pred_train.to_csv('result/predicted_train.tsv', sep='\t', index=False)
-    pred_val.to_csv('result/predicted_test.tsv', sep='\t', index=False)
+    true_train.to_csv(join(network, 'true_train.tsv'), sep='\t', index=False)
+    true_val.to_csv(join(network, 'true_test.tsv'), sep='\t', index=False)
+    pred_train.to_csv(join(network, 'predicted_train.tsv'), sep='\t', index=False)
+    pred_val.to_csv(join(network, 'predicted_test.tsv'), sep='\t', index=False)
 
     train_error = 100 * np.mean(np.abs(y_train - z_train) / np.ma.masked_where(y_train == 0, np.abs(y_train)), axis=0)
     val_error = 100 * np.mean(np.abs(y_val - z_val) / np.ma.masked_where(y_val == 0, np.abs(y_val)), axis=0)
@@ -52,4 +54,4 @@ def evaluate(network, data, labels, test_size=0.33):
 
 if __name__ == '__main__':
     np.random.seed(777)
-    evaluate('result/convnet.h5', 'data/particles_norm.npy', 'data/labels_lognorm.npy')
+    evaluate(sys.argv[1], sys.argv[2], sys.argv[3])
